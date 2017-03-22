@@ -1,0 +1,3 @@
+If you are a complete plebian to Arduino, here are some handy guides.
+
+https://startingelectronics.org/software/arduino/learn-to-program-course/01-program-structure-flow/
