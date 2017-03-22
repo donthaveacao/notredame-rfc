@@ -1,0 +1,89 @@
+1. make part
+2. New >> Manufacturing
+3. import reference model
+    set to default
+4. create CSYS on top corner of part
+5. note: TECHNO is x = southward, y = eastward
+6. create workcenter
+    set to default
+7. create operation
+    a. choose coord system
+    b. set clearance (0.5, generally)
+    c. check finish
+8. sequences
+    note: bolt down pieces, sometimes? before cutting. consider
+    a. Mill >> Profile Milling
+      i. create tool
+      ii. set flute diam, length
+      iii. apply, OK
+      iv. CLEAR_DIST: 0.5
+      v. SPINDLE_SPEED: 13000
+      vi. STEP_DEPTH: 1/2 of bit diam
+      vii. CUT_FEED (feed rate): 65
+
+chip load: based on MATERIAL and BIT_DIAM
+(for HDPE ~0.006")
+feed rate = no. flutes * chip load * RPM * 0.5 (NGEDDE Factor)
+~= 2 * 0.006 * 13000 * 0.5 ~= 65
+
+      viii. Go to reference (select profiled faces)
+     
+         note: for loop profile select, Anchor is "top face"
+
+      ix. Check tool path
+
+    b. volume rough
+    c. hole mills: Standard >>
+      i. define points, select points
+      ii. must set plunge speed in machine!!!! (look up)
+
+9. Manufacturing >> Save a CL File
+    a. NC Sequence
+    b. Select sequence name from list
+    c. File >> (Check "Compute CL")
+    d. Done
+    e. Name file and save
+    f. Done output
+
+10. Manufacturing >> Post a CL File
+    a. Select NCL File
+    b. Open
+    c. Done
+    d. Select UNCX01.P20
+      i. check Cycle Time (in minutes)
+    e. use the .NC file
+
+11. plunge speed = inch/min
+
+12. File >> Open sequence
+13. Preprocess
+14. Start
+
+
+
+
+
+1/8” bit
+1/4” bit
+Cut Feed
+60
+30 (50)
+Step Depth
+.075
+.15
+Clear Distance
+.75
+.75
+Spindle Speed
+6000
+3000
+Step Over
+.06
+.12
+
+
+
+
+
+left_swiss_wall_for_old_led.prt (x4)
+front_swiss_wall.prt (x4)
