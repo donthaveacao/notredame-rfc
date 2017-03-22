@@ -4,7 +4,8 @@
  but then switch it back to XBEE or UART when you are done.
  
  Author : Kat Landers
- Date   : April 2015
+ Editors: Wei Cao
+ Date   : April 2015, March 2017
  */
 
  
@@ -61,7 +62,6 @@ using namespace ND;
 #define BOUNCEDELAY 20
 
 //Center Specific Values
-
 #ifdef KURT
   #define RELEASE_SERVO_UPPER 85 //Starting position
   #define RELEASE_SERVO_LOWER 50
@@ -121,8 +121,6 @@ uint8_t val;
 /***************************************************
  * Global Variables
  ***************************************************/
-
-// START DRIVE VARS
 // Motor Class
 Servo lm; 
 Servo rm;
@@ -138,7 +136,6 @@ RXDATA rxdata; // used to handle the incoming data from the xbox controller... b
 bool tackled = false; // determines if you are tackled or not
 Tackle_Sensor tackle_sensor(TACKLE_SENSOR_PIN);
 uint8_t message[1] = {1};
-// END DRIVE VARS
 
 
 // Center Servo VARS
@@ -153,9 +150,15 @@ double alignment_servo_value = double(ALIGNMENT_SERVO_UPPER);
 
 int count;
 
-/***************************************************
- * Setup
- ***************************************************/
+
+
+
+
+
+
+/***************************************************************
+ * Arduino processes commands in the setup() function only once
+ ***************************************************************/
 void setup() {
   
   // Setup/initialize servo handles
@@ -192,19 +195,26 @@ void ISR_Alignment(){
   alignment_toggle = false;
 }
 
-
 /***************************************************
- * Loop
+ * Arduino loops commands in the loop() function
  ***************************************************/
 void loop() {
 
   static long timeout_timer;
 
+ 
+ 
   /************************************************************
    * PART 1. Read the Tackle Sensor
    ************************************************************/
   tackle_sensor.Read();
 
+ 
+ 
+ 
+ 
+ 
+ 
   /************************************************************
    * PART 2. Read the Packet
    ************************************************************/
@@ -212,10 +222,12 @@ void loop() {
     // got something -- Check the Address
     if (ndbee.Address16() == CONTROLLER_ADDRESS) {
       rxdata.set(ndbee.getData());
+     
 #ifdef DEBUG
       Serial.print("Succes");
       rxdata.debugprint(&Serial);
 #endif
+     
     }
 #ifdef DEBUG
     Serial.print(ndbee.Address16());
@@ -230,6 +242,15 @@ void loop() {
     //if (rxdata.TimeOut()) rxdata.ZERO(); // after so many cycles of no packets cut the power...
   }
 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
   /************************************************************
    * PART 3. Select Your Mode
    ************************************************************/
@@ -290,13 +311,27 @@ void loop() {
     updateDriveF(false); // Always update the drive control
     break;
 
+    
+    
+    
+    
+    
+    
+    
   case AUTOMATIC_MODE:
     updateDriveF(false); // Always update the drive control
     break;
 
+    
+    
+    
+    
+    
+    
+    
   case CALIBRATION_MODE:
 
-    /* CALIBRATION MODE (Mode == 3) for setting the motor offsets
+    /* CALIBRATION MODE (Mode == 3) for setting the DC motor offsets
      Here is how you calibrate ...
      There are forward and reverse motor offsets for when you are going forward or backward and they are on 1 OF THE 2 MOTORS!!
      First, let's calibrate forward.  Go forward and see which motor is faster. If it goes straight, no calibration necessary :) ... move on to calibrate reverse.
@@ -346,7 +381,7 @@ void loop() {
     Serial.println(mo.direct());
 #endif
     break;
-
+    
   case TUTORIAL_MODE: // TUTORIAL MODE:
 
     updateDriveF(true); // Always update the drive control
@@ -364,14 +399,17 @@ void loop() {
 #endif
 }
 
+
+
 /***************************************************
- * Drive Control Function
+ * Call Drive Control Function and Tackle Sensor
  ***************************************************/
 void control(signed char throttle, signed char steering, signed char side2side) {
+ // This control() function stops forces the DC motors to halt if the robot is tackled.
   if (!tackle_sensor.tackled()) {
-    //if (!tackled)
     Wheels.Controller(throttle, steering);
-#ifdef DEBUG
+   
+#ifdef DEBUG // debugging code block
     vals1 = Wheels.vals(1);
     vals2 = Wheels.vals(2);
     Serial.print("Left: "); 
@@ -380,8 +418,9 @@ void control(signed char throttle, signed char steering, signed char side2side) 
     Serial.print("Right: "); 
     Serial.println(vals2[0]);
 #endif
+   
   }
-  else { // stop the motors if tackled
+  else {
     Wheels.Stop();
 #ifdef DEBUG
     Serial.println("TACKLED");
@@ -390,7 +429,7 @@ void control(signed char throttle, signed char steering, signed char side2side) 
 }
 
 /***************************************************
- * Drive Function
+ * Drive Control Function
  ***************************************************/
 void updateDriveF(boolean blnTutorialMode) {
   if (tackle_sensor.tackled()) Wheels.Stop(); // brake
