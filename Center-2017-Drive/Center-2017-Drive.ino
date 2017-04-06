@@ -1,4 +1,4 @@
-/* Standard_Base_2015_Drive
+  /* Standard_Base_2015_Drive
  This is downloaded to Linemen, WR, or RB Drive Arduino (by the speed controlelr).
  Make sure the Xbee Shield switch is set to USB or DLINE when uploading,
  but then switch it back to XBEE or UART when you are done.
@@ -63,14 +63,15 @@ using namespace ND;
 
 //Center Specific Values
 #ifdef KURT
-  #define RELEASE_SERVO_UPPER 85 //Starting position
-  #define RELEASE_SERVO_LOWER 50
+  //#define RELEASE_SERVO_UPPER 85 //Starting position
+  //#define RELEASE_SERVO_LOWER 50
   //**#define ARM_SERVO_UPPER 78 //Starting position: All the way back
   //**#define ARM_SERVO_LOWER 35
-  #define ALIGNMENT_SERVO_UPPER 41 //Starting positon: UPPER position is a lower value in degrees
+  //#define ALIGNMENT_SERVO_UPPER 41 //Starting positon: UPPER position is a lower value in degrees
   //#define ALIGNMENT_SERVO_LOWER 60
 #endif
 
+/*
 #ifdef FIVEHOURS
   #define RELEASE_SERVO_UPPER 90
   #define ARM_SERVO_UPPER 90
@@ -79,6 +80,7 @@ using namespace ND;
   #define ARM_SERVO_LOWER 0
   //#define ALIGNMENT_LOWER 0
 #endif
+*/
 
 /***************************************************
  * Pin Numbers
@@ -88,9 +90,9 @@ using namespace ND;
 #define LEFT_MOTOR_PIN 10 // interior wire
 #define RIGHT_MOTOR_PIN 11 // interior wire
 //Center Specific
-#define RELEASE_SERVO_PIN 4 // two position that pushes the ball out of the claw
+//#define RELEASE_SERVO_PIN 4 // two position that pushes the ball out of the claw
 //**#define ARM_SERVO_PIN 5 // (two position) the one that spins the arm to push the arm out
-#define ALIGNMENT_SERVO_PIN 3 // the arrow that goes down (two-position)
+//#define ALIGNMENT_SERVO_PIN 3 // the arrow that goes down (two-position)
 #define INTERRUPT_PIN 2 //
 
 
@@ -109,20 +111,22 @@ CLAW_ZERO
 
 */
 #define CLAW_SERVO_PIN 7
-#define CLAW_SPEED 45
+#define CLAW_SPEED 90
 #define CLAW_UPPER_LIMIT 180
 #define CLAW_LOWER_LIMIT 0
 #define CLAW_ZERO 90
+//#define CLAW_OFFSET 2 not used
 
 #define TURNTABLE_SERVO_PIN 5
 #define TURNTABLE_SPEED 15
 #define TURNTABLE_UPPER_LIMIT 135
 #define TURNTABLE_LOWER_LIMIT 45
 #define TURNTABLE_ZERO 90
+#define TURNTABLE_OFFSET 2
 
 #define ARM_SERVO_PIN 6
-#define ARM_SPEED 15
-#define ARM_ZERO 90
+#define ARM_SPEED 75
+#define ARM_ZERO 90  
 
 
 /***************************************************
@@ -170,14 +174,14 @@ uint8_t message[1] = {1};
 
 
 // Center Servo VARS
-Servo release_servo; 
+//Servo release_servo; 
 //**Servo arm_servo; 
-Servo alignment_servo;
+//Servo alignment_servo;
 volatile boolean alignment_toggle = false;
 boolean arm_engaged = false;
 boolean release_engaged = false;
 volatile boolean down = false;
-double alignment_servo_value = double(ALIGNMENT_SERVO_UPPER);
+//double alignment_servo_value = double(ALIGNMENT_SERVO_UPPER);
 
 
 
@@ -207,14 +211,14 @@ int count;
 void setup() {
   
   // Setup/initialize servo handles
-  release_servo.attach(RELEASE_SERVO_PIN);
+  //release_servo.attach(RELEASE_SERVO_PIN);
   //**arm_servo.attach(ARM_SERVO_PIN);
-  alignment_servo.attach(ALIGNMENT_SERVO_PIN);
+  //alignment_servo.attach(ALIGNMENT_SERVO_PIN);
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
   attachInterrupt(0,ISR_Alignment,FALLING);
-  alignment_servo.write(ALIGNMENT_SERVO_UPPER);
+  //alignment_servo.write(ALIGNMENT_SERVO_UPPER);
   //**arm_servo.write(ARM_SERVO_UPPER);
-  release_servo.write(RELEASE_SERVO_UPPER);
+  //release_servo.write(RELEASE_SERVO_UPPER);
   
   
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -226,6 +230,7 @@ void setup() {
   turntable_servo.attach(TURNTABLE_SERVO_PIN);
   turntable_servo_position = TURNTABLE_ZERO;
   turntable_servo.write(turntable_servo_position);
+
   
   arm_servo.attach(ARM_SERVO_PIN);
   arm_servo_velocity = ARM_ZERO;
@@ -378,7 +383,7 @@ TURNTABLE_LOWER_LIMIT
 */
 
 
-if(rxdata.ButtonPress(A)){
+if(rxdata.ButtonPress(Y)){
   // rotate (position) turntable CCW
   if(turntable_servo_position<TURNTABLE_UPPER_LIMIT){
     turntable_servo_position += TURNTABLE_SPEED;
@@ -387,7 +392,7 @@ if(rxdata.ButtonPress(A)){
     turntable_servo_position = TURNTABLE_UPPER_LIMIT;
   }
 }
-else if(rxdata.ButtonPress(Y)){
+else if(rxdata.ButtonPress(A)){
   // rotate turntable CW
   if(turntable_servo_position>TURNTABLE_LOWER_LIMIT){
     turntable_servo_position -= TURNTABLE_SPEED;
@@ -397,8 +402,6 @@ else if(rxdata.ButtonPress(Y)){
   }
 }
 turntable_servo.write(turntable_servo_position);
-  
-
 
 // CLAW ROTATION (POSITION)
 /*
@@ -412,7 +415,7 @@ CLAW_LOWER_LIMIT
 
 */
 
-if(rxdata.ButtonPress(X)){
+if(rxdata.ButtonPress(B)){
   // if viewed from aft, rotates claw CCW (drops ball to robot's left)
   if(claw_servo_position<CLAW_UPPER_LIMIT){
   claw_servo_position += CLAW_SPEED;
@@ -421,7 +424,7 @@ if(rxdata.ButtonPress(X)){
     claw_servo_position = CLAW_UPPER_LIMIT;
   }
 }
-else if(rxdata.ButtonPress(B)){
+else if(rxdata.ButtonPress(X)){
   // if viewed from aft, rotates claw CW (drops ball to robot's right)
   if(claw_servo_position>CLAW_LOWER_LIMIT){
   claw_servo_position -= CLAW_SPEED;
@@ -495,7 +498,6 @@ claw_servo.write(claw_servo_position);
       arm_servo.write(ARM_SERVO_UPPER);
     }
     
-*/
 
     if(release_engaged){
       release_servo.write(RELEASE_SERVO_LOWER);
@@ -505,6 +507,7 @@ claw_servo.write(claw_servo_position);
     }
     
 
+*/
 
     updateDriveF(false); // Always update the drive control
     break;
